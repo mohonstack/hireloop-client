@@ -47,7 +47,9 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
+      // Synthetic/uninitialized keydowns (dispatched without a `key`) reach
+      // window listeners too — bail instead of crashing on them.
+      if (typeof event.key !== "string" || event.key.toLowerCase() !== "d") {
         return
       }
 

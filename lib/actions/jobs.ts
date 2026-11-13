@@ -1,4 +1,4 @@
-import type { JobFormData } from "@/app/dashboard/recruiter/jobs/new/page"
+import type { JobFormData } from "@/lib/types/jobs"
 import { fetchJson } from "@/lib/api/http"
 
 /** Result of `POST /jobs`, as sent back by MongoDB's `insertOne`. */

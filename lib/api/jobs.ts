@@ -1,66 +1,34 @@
-import { fetchJson } from "./http"
-import type { JobRow } from "@/app/dashboard/recruiter/jobs/page"
+// Single data-access module for the jobs API (Express on :5000).
+// Replaces the old split between `lib/api/jobs.ts` and `lib/actions/jobs.ts`.
 
-/** The subset of a job document the API is guaranteed to store today. */
-type StoredJob = Omit<JobRow, "applicants" | "status" | "posted"> &
-  Partial<Pick<JobRow, "applicants" | "status" | "posted">>
+import type { JobFormData, JobRow } from "@/lib/types/jobs"
 
-const DAY_MS = 24 * 60 * 60 * 1000
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
 
-/**
- * ObjectId embeds its creation time in the first four bytes of the hex string,
- * which lets us recover a post date without the API storing one.
- */
-const postedLabel = (id: string): string => {
-  const seconds = parseInt(id.slice(0, 8), 16)
-  if (!Number.isFinite(seconds)) {
-    return "Posted just now"
-  }
-
-  const days = Math.floor((Date.now() - seconds * 1000) / DAY_MS)
-  if (days <= 0) {
-    return "Posted today"
-  }
-  if (days === 1) {
-    return "Posted 1d ago"
-  }
-  if (days < 30) {
-    return `Posted ${days}d ago`
-  }
-  return `Posted ${Math.floor(days / 30)}mo ago`
+export const getJobs = async (query = ''): Promise<JobRow[]> => {
+    const res = await fetch(`${BASE_URL}/jobs?${query}`)
+    return res.json()
 }
 
-/**
- * A job is expired once its deadline has passed; an unparseable deadline keeps
- * the listing live rather than silently hiding it.
- */
-const statusFor = (deadline: string): JobRow["status"] => {
-  const deadlineMs = new Date(deadline).getTime()
-  return Number.isNaN(deadlineMs) || deadlineMs >= Date.now()
-    ? "active"
-    : "expired"
+export const getJobById = async (jobId: string): Promise<JobRow> => {
+    const res = await fetch(`${BASE_URL}/jobs/${jobId}`)
+    return res.json()
 }
 
-/**
- * The stored documents only carry the fields the "Post a New Job" form writes.
- * `applicants`, `status` and `posted` are derived so the table never renders
- * "undefined candidates" or an empty badge.
- */
-const toJobRow = (job: StoredJob): JobRow => ({
-  ...job,
-  applicants: job.applicants ?? 0,
-  status: job.status ?? statusFor(job.deadline),
-  posted: job.posted ?? postedLabel(job._id),
-})
+export const createJob = async (data: JobFormData) => {
+    const res = await fetch(`${BASE_URL}/jobs`, {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+        },
+        body: JSON.stringify(data),
+    })
+    return res.json()
+}
 
-/**
- * Fetch every job posting as table-ready rows.
- *
- * Throws an `ApiError` naming the endpoint and status instead of the opaque
- * `Unexpected token '<'` that an unchecked `res.json()` produced when the API
- * answered with an HTML 404 page.
- */
-export const getJobs = async (): Promise<JobRow[]> => {
-  const jobs = await fetchJson<StoredJob[]>("/jobs")
-  return jobs.map(toJobRow)
+export const deleteJob = async (jobId: string) => {
+    const res = await fetch(`${BASE_URL}/jobs/${jobId}`, {
+        method: "DELETE",
+    })
+    return res.json()
 }

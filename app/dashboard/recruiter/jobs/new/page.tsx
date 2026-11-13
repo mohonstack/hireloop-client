@@ -5,54 +5,27 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { PageContainer, PageHeader, SectionCard } from "@/components/dashboard/page-shell"
+import { PillGroup } from "@/components/shared/pill-group"
 import { Briefcase, Calendar, MapPin } from "lucide-react"
+
+import {
+    JOB_CATEGORIES,
+    JOB_TYPES,
+    SALARY_FREQUENCIES,
+    type JobFormData,
+    type JobType,
+} from "@/lib/types/jobs"
+import { toast } from "@/components/ui/toast"
+import { useRouter } from "next/navigation"
 import { createJob } from "@/lib/actions/jobs"
-// import { createJob } from "@/lib/actions/jobs"
-
-
-type JobType = "full-time" | "part-time" | "contract" | "internship"
-
-// Flat form data, keys mirror the Figma layer names (isRemote, deadline, minSalary…).
-export type JobFormData = {
-    title: string
-    companyName: string
-    category: string
-    jobType: JobType
-    isRemote: boolean
-    location: string
-    deadline: string
-    minSalary: string
-    maxSalary: string
-    salaryFrequency: string
-    responsibilities: string
-    requirements: string
-}
-
-const JOB_CATEGORIES = [
-    "Engineering & Tech",
-    "Design",
-    "Product",
-    "Marketing",
-    "Infrastructure",
-    "Quality",
-]
-
-const JOB_TYPES: JobType[] = ["full-time", "part-time", "contract", "internship"]
-
-const SALARY_FREQUENCIES = ["per hour", "per day", "per week", "per month", "per year"]
+import { Field } from "@/components/shared/field"
 
 const inputClass =
-    "bg-[#1A1A1F] border-white/10 focus-visible:border-[#5C53FE]/60 focus-visible:ring-[#5C53FE]/30 aria-invalid:border-destructive/60"
-const sectionClass =
-    "rounded-2xl border border-white/10 bg-[#101010]/95 p-6 shadow-[inset_0_3px_10px_rgba(255,255,255,0.04)]"
-const sectionHeadingClass =
-    "mb-6 flex items-center gap-3 font-heading text-lg font-semibold tracking-[-0.02em] text-white"
-const sectionBulletClass =
-    "flex size-7 items-center justify-center rounded-lg bg-[#5C53FE]/15 text-sm font-semibold text-[#8B85FF]"
+    "surface-field focus-visible:ring-[#5C53FE]/30"
 
 export default function NewJobPage() {
     const [form, setForm] = useState<JobFormData>({
@@ -68,7 +41,11 @@ export default function NewJobPage() {
         salaryFrequency: "per hour",
         responsibilities: "",
         requirements: "",
+        applicants: 0,
+        status: "active",
     })
+
+    const router = useRouter()
 
     // Generic flat setter so every field is just setField("key")(value).
     const set =
@@ -83,40 +60,31 @@ export default function NewJobPage() {
         // TODO: wire into the backend (`POST /jobs` or similar).
 
         const result = await createJob(jobData);
-        console.log("createJob result:", result);
+        if(result.insertedId){
+            console.log("createJob result:", result);
+            toast.add({
+                title: "Job created",
+                description: "The job has been successfully created.",
+            })
+            router.push('/dashboard/recruiter/jobs')
+        }
 
     }
 
     return (
-        <div className="mx-auto w-full max-w-3xl px-4 py-8">
-            <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-                <div className="flex flex-col gap-1.5">
-                    <p className="text-xs font-medium tracking-wide text-[#8B85FF] uppercase">
-                        Create New Listing
-                    </p>
-                    <h1 className="font-heading text-[28px] leading-[1.15] font-bold tracking-[-0.02em] text-white">
-                        Post a New Job
-                    </h1>
-                    <p className="text-sm text-white/60">
-                        Fill in the position specifications to attract qualified talent across
-                        our network.
-                    </p>
-                </div>
-
-            </header>
+        <PageContainer width="narrow">
+            <PageHeader
+                overline="Create New Listing"
+                title="Post a New Job"
+                subtitle="Fill in the position specifications to attract qualified talent across our network."
+            />
 
             <form id="new-job-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
                 {/* 1. Basic Information */}
-                <section className={sectionClass}>
-                    <h2 className={sectionHeadingClass}>
-                        <span className={sectionBulletClass}>1</span>
-                        Basic Information
-                    </h2>
-
+                <SectionCard index={1} title="Basic Information">
                     <div className="flex flex-col gap-5">
                         {/* Job Title */}
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="title">Job title</Label>
+                        <Field label="Job title" htmlFor="title">
                             <Input
                                 id="title"
                                 name="title"
@@ -128,12 +96,11 @@ export default function NewJobPage() {
                                 placeholder="e.g. Senior Product Designer"
                                 className={inputClass}
                             />
-                        </div>
+                        </Field>
 
                         {/* Company Name & Job Category */}
                         <div className="grid gap-5 sm:grid-cols-2">
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="companyName">Company name</Label>
+                            <Field label="Company name" htmlFor="companyName">
                                 <div className="relative">
                                     <Briefcase
                                         aria-hidden
@@ -149,9 +116,8 @@ export default function NewJobPage() {
                                         className={`${inputClass} pl-9`}
                                     />
                                 </div>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="category">Job category</Label>
+                            </Field>
+                            <Field label="Job category" htmlFor="category">
                                 <Select
                                     value={form.category || ''}
                                     onValueChange={(value) => set("category")(value ?? "")}
@@ -167,55 +133,29 @@ export default function NewJobPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                            </div>
+                            </Field>
                         </div>
 
                         {/* Job Type */}
                         <fieldset className="flex flex-col gap-2">
                             <legend className="text-sm text-[#EDEDEF]/80">Job type</legend>
-                            <RadioGroup
+                            <PillGroup
+                                name="job-type"
                                 value={form.jobType}
-                                onValueChange={(value) => set("jobType")(value as JobType)}
+                                onChange={(value) => set("jobType")(value as JobType)}
+                                options={JOB_TYPES.map((type) => ({ value: type, label: type }))}
                                 className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-                            >
-                                {JOB_TYPES.map((type) => {
-                                    const selected = form.jobType === type
-
-                                    return (
-                                        <Label
-                                            key={type}
-                                            htmlFor={`job-type-${type}`}
-                                            className={
-                                                "flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm capitalize transition-colors has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-[#5C53FE]/60 " +
-                                                (selected
-                                                    ? "border-[#5C53FE] bg-[#5C53FE]/15 text-white"
-                                                    : "border-white/10 bg-[#1A1A1F] text-white/70 hover:border-white/25 hover:text-white")
-                                            }
-                                        >
-                                            <RadioGroupItem
-                                                value={type}
-                                                id={`job-type-${type}`}
-                                                className="sr-only"
-                                            />
-                                            {type}
-                                        </Label>
-                                    )
-                                })}
-                            </RadioGroup>
+                                pillClassName="h-11 justify-center capitalize"
+                            />
                         </fieldset>
                     </div>
-                </section>
+                </SectionCard>
 
                 {/* 2. Location, Compensation & Timeline */}
-                <section className={sectionClass}>
-                    <h2 className={sectionHeadingClass}>
-                        <span className={sectionBulletClass}>2</span>
-                        Location, Compensation &amp; Timeline
-                    </h2>
-
+                <SectionCard index={2} title="Location, Compensation &amp; Timeline">
                     <div className="flex flex-col gap-5">
                         {/* Remote Work Allowed (isRemote) */}
-                        <div className="flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-[#1A1A1F] p-4">
+                        <div className="flex items-center justify-between gap-4 rounded-lg border surface-field p-4">
                             <div className="flex flex-col gap-1">
                                 <Label htmlFor="isRemote" className="text-white/90">
                                     Remote work allowed
@@ -233,10 +173,7 @@ export default function NewJobPage() {
 
                         {/* Job Location & Application Deadline */}
                         <div className="grid gap-5 sm:grid-cols-2">
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="location">
-                                    Job location <span className="text-destructive/70">*</span>
-                                </Label>
+                            <Field label="Job location" htmlFor="location" required hint="Required">
                                 <div className="relative">
                                     <MapPin
                                         aria-hidden
@@ -252,10 +189,8 @@ export default function NewJobPage() {
                                         className={`${inputClass} pl-9`}
                                     />
                                 </div>
-                                <p className="text-xs text-white/40">Required</p>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="deadline">Application deadline</Label>
+                            </Field>
+                            <Field label="Application deadline" htmlFor="deadline">
                                 <div className="relative">
                                     <Calendar
                                         aria-hidden
@@ -270,13 +205,12 @@ export default function NewJobPage() {
                                         className={inputClass}
                                     />
                                 </div>
-                            </div>
+                            </Field>
                         </div>
 
                         {/* Salary Range (minSalary & maxSalary) */}
                         <div className="grid gap-5 sm:grid-cols-[1fr_1fr_auto] sm:items-start">
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="minSalary">Min salary / rate</Label>
+                            <Field label="Min salary / rate" htmlFor="minSalary">
                                 <Input
                                     id="minSalary"
                                     name="minSalary"
@@ -288,9 +222,8 @@ export default function NewJobPage() {
                                     onChange={(e) => set("minSalary")(e.target.value)}
                                     className={inputClass}
                                 />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="maxSalary">Max salary / rate</Label>
+                            </Field>
+                            <Field label="Max salary / rate" htmlFor="maxSalary">
                                 <Input
                                     id="maxSalary"
                                     name="maxSalary"
@@ -302,9 +235,8 @@ export default function NewJobPage() {
                                     onChange={(e) => set("maxSalary")(e.target.value)}
                                     className={inputClass}
                                 />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="salaryFrequency">Frequency</Label>
+                            </Field>
+                            <Field label="Frequency" htmlFor="salaryFrequency">
                                 <Select
                                     value={form.salaryFrequency}
                                     onValueChange={(value) => set("salaryFrequency")(value ?? "")}
@@ -320,21 +252,15 @@ export default function NewJobPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                            </div>
+                            </Field>
                         </div>
                     </div>
-                </section>
+                </SectionCard>
 
                 {/* 3. Responsibilities & Requirements */}
-                <section className={sectionClass}>
-                    <h2 className={sectionHeadingClass}>
-                        <span className={sectionBulletClass}>3</span>
-                        Responsibilities &amp; Requirements
-                    </h2>
-
+                <SectionCard index={3} title="Responsibilities &amp; Requirements">
                     <div className="flex flex-col gap-5">
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="responsibilities">Key responsibilities</Label>
+                        <Field label="Key responsibilities" htmlFor="responsibilities">
                             <Textarea
                                 id="responsibilities"
                                 name="responsibilities"
@@ -346,9 +272,8 @@ export default function NewJobPage() {
                                 onChange={(e) => set("responsibilities")(e.target.value)}
                                 className={inputClass}
                             />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="requirements">Qualifications &amp; requirements</Label>
+                        </Field>
+                        <Field label="Qualifications &amp; requirements" htmlFor="requirements">
                             <Textarea
                                 id="requirements"
                                 name="requirements"
@@ -360,16 +285,16 @@ export default function NewJobPage() {
                                 onChange={(e) => set("requirements")(e.target.value)}
                                 className={inputClass}
                             />
-                        </div>
+                        </Field>
                     </div>
-                </section>
+                </SectionCard>
                 <section>
-                    <Button type="submit" form="new-job-form" className="bg-[#5C53FE] hover:bg-[#7B74FF]">
+                    <Button type="submit" form="new-job-form" className="btn-brand">
                         <Briefcase aria-hidden />
                         Publish Job
                     </Button>
                 </section>
             </form>
-        </div>
+        </PageContainer>
     )
 }

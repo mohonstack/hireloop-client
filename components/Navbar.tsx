@@ -27,7 +27,7 @@ type NavLink = {
 
 function getNavLinks(session?: { user?: { role?: string | null } | null } | null): NavLink[] {
   return [
-    { label: "Browse Jobs", href: "/jobs" },
+    { label: "Browse Jobs", href: "/browse-jobs" },
     { label: "Company", href: "/companies" },
     { label: "Pricing", href: "/pricing" },
     {
