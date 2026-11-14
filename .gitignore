@@ -37,3 +37,7 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# stray Windows reserved-name file in the repo root; `nul` cannot be deleted
+# with ordinary tools and must never be staged
+nul

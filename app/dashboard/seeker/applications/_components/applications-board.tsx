@@ -4,14 +4,16 @@
 // header with Active/Archived segmented toggle + Export PDF, a four-cell
 // stats bento, and a table of applications with status pills.
 //
-// Data comes in as a prop (dummy data for now); stats mirror the Figma
-// layout but are computed from the actual list.
+// Data comes in as a prop from the page's GET /applications load; stats
+// mirror the Figma layout but are computed from the actual list.
 
 import { useState } from "react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { formatRelativeTime } from "@/lib/formatters"
 import { STATUS_META, type ApplicationRow, type ApplicationStatus } from "@/lib/types/applications"
+import type { PlanUsage } from "@/lib/plan"
+import { PlanUsage as PlanUsageBar } from "@/components/plan-usage"
 import { ChevronLeft, ChevronRight, Download } from "lucide-react"
 
 const cardShadow =
@@ -50,8 +52,11 @@ type Tab = "active" | "archived"
 
 export function ApplicationsBoard({
     applications,
+    usage,
 }: {
     applications: readonly ApplicationRow[]
+    /** Free/Premium quota — hidden when the plan lookup failed. */
+    usage?: PlanUsage | null
 }) {
     const [tab, setTab] = useState<Tab>("active")
     const rows = applications.filter((app) =>
@@ -120,6 +125,18 @@ export function ApplicationsBoard({
                     </button>
                 </div>
             </header>
+
+            {/* Free/Premium application quota (e.g. 7/10) */}
+            {usage ? (
+                <div
+                    className={cn(
+                        "mt-6 border border-white/10 bg-[#141418] px-6 py-4",
+                        cardShadow,
+                    )}
+                >
+                    <PlanUsageBar {...usage} />
+                </div>
+            ) : null}
 
             {/* Stats bento */}
             <dl className="mt-6 grid grid-cols-2 gap-6 lg:grid-cols-4">

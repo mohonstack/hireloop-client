@@ -2,6 +2,8 @@ import { Geist, Geist_Mono, Manrope, Space_Mono } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toast"
+import { SonnerToaster } from "@/components/sonner-toaster"
 import { cn } from "@/lib/utils"
 import NavbarPage from "@/components/Navbar"
 
@@ -43,7 +45,15 @@ export default function RootLayout({
     >
       <body>
         <NavbarPage />
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          {/* Sonner renders the plan/Apply Now notifications; it needs the
+              theme context above to match light/dark. */}
+          <SonnerToaster />
+        </ThemeProvider>
+        {/* Mounted once at the root so the dashboard's own toasts (job
+            created / deleted) work from every page. */}
+        <Toaster />
       </body>
     </html>
   )

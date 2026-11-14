@@ -16,6 +16,14 @@ export const auth = betterAuth({
         input: true,
         defaultValue: "seeker",
       },
+      // Free/Premium subscription. `input: false` stops clients from signing
+      // up — or patching themselves — as premium; upgrades are a server-side
+      // concern (hireloop-server owns the quota check).
+      plan: {
+        type: ["free", "premium"],
+        input: false,
+        defaultValue: "free",
+      },
     },
   },
   socialProviders: {

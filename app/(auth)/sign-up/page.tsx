@@ -4,6 +4,7 @@ import * as React from "react"
 
 import { AuthForm, AuthFormData } from "@/components/auth-form"
 import { authClient } from "@/lib/auth-client"
+import { safeRedirect } from "@/lib/redirect"
 import { useRouter } from "next/navigation"
 
 export default function SignUpPage() {
@@ -30,9 +31,15 @@ export default function SignUpPage() {
       return
     }
 
+    // `?redirectTo=` keeps flows like Apply Now where they started.
+    const target = safeRedirect(
+      new URLSearchParams(window.location.search).get("redirectTo"),
+      "/"
+    )
+
     // Refresh so server components pick up the new session cookie, then navigate.
     router.refresh()
-    router.push("/")
+    router.push(target)
   }
 
   return <AuthForm mode="signup" onSubmit={handleSignUp} error={error} />
