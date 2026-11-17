@@ -42,8 +42,16 @@ export default async function CheckoutSuccessPage({
     }
 
     // Hand the verified session to the backend (plan activation etc.).
-    const result = await checkoutVerify(session_id)
-    console.log({ result })
+    // Stripe already confirmed the payment above, so if the backend is
+    // unreachable or rejects the session we still show the receipt — a
+    // failed activation must not 500 a paid checkout.
+    let verify: Awaited<ReturnType<typeof checkoutVerify>> | null = null
+    try {
+        verify = await checkoutVerify(session_id)
+    } catch (err) {
+        console.error("checkoutVerify failed:", err)
+    }
+    console.log({ verify })
 
     // Receipt details.
     const paymentIntent =

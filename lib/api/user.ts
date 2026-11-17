@@ -1,4 +1,5 @@
-// Plan/subscription data access for the Apply Now gate and the usage strip.
+// User data access: plan/usage for the Apply Now gate and usage strip, plus
+// the legacy premium flag.
 //
 // `GET /users/:id/plan` is authenticated server-side: Express resolves the
 // better-auth session from the forwarded cookie and only answers for the
@@ -8,6 +9,7 @@
 import type { PlanInfo } from "@/lib/plan"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
+
 
 export const getUserPlan = async (
   userId: string,
@@ -24,4 +26,9 @@ export const getUserPlan = async (
   }
 
   return response.json()
+}
+
+export const getUserPremiumById = async(userId: string) =>{
+    const response = await fetch(`${BASE_URL}/users/${userId}/premium`)
+    return response.json()
 }
