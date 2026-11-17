@@ -191,7 +191,7 @@ export function SeekerHome({
         <form
           onSubmit={submitSearch}
           role="search"
-          className="relative w-full sm:w-[280px]"
+          className="relative w-full sm:w-70"
         >
           <Search
             aria-hidden
@@ -220,14 +220,14 @@ export function SeekerHome({
             aria-label="Messages"
             className="flex size-9 items-center justify-center rounded-lg text-[#A0A0AB] transition-colors hover:bg-[#1A1A1F] hover:text-[#EDEDEF]"
           >
-            <Mail aria-hidden className="size-[18px]" />
+            <Mail aria-hidden className="size-4.5" />
           </button>
           <button
             type="button"
             aria-label="Notifications"
             className="relative flex size-9 items-center justify-center rounded-lg text-[#A0A0AB] transition-colors hover:bg-[#1A1A1F] hover:text-[#EDEDEF]"
           >
-            <Bell aria-hidden className="size-[18px]" />
+            <Bell aria-hidden className="size-4.5" />
             <span
               aria-hidden
               className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-[#EF4444] ring-2 ring-[#101010]"
@@ -256,7 +256,7 @@ export function SeekerHome({
               <dt className="text-[13px] text-[#A0A0AB]">{label}</dt>
               <Icon
                 aria-hidden
-                className={cn("size-[18px] shrink-0", iconTone)}
+                className={cn("size-4.5 shrink-0", iconTone)}
               />
             </div>
             <dd className="mt-5 text-[28px] leading-8 font-semibold text-[#EDEDEF]">

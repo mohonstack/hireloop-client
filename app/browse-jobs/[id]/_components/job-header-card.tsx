@@ -159,12 +159,12 @@ export function JobHeaderCard({ job }: { job: JobRow }) {
       : "Apply Now"
 
   return (
-    <section className="border border-white/10 bg-[#141418] p-8 shadow-[0_1px_2px_rgba(0,0,0,0.35)] shadow-[inset_0_1px_rgba(255,255,255,0.035)]">
+    <section className="border border-white/10 bg-[#141418] p-8 shadow-[0_1px_2px_rgba(0,0,0,0.35),inset_0_1px_rgba(255,255,255,0.035)]">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="flex min-w-0 flex-wrap items-start gap-6">
           {/* Company logo tile: 80px tile, 70px inner logo (Figma) */}
           <div className="flex size-20 shrink-0 items-center justify-center rounded-xl bg-[#1A1A1F]">
-            <span className="brand-chip flex size-[70px] items-center justify-center rounded-xl text-2xl font-semibold">
+            <span className="brand-chip flex size-17.5 items-center justify-center rounded-xl text-2xl font-semibold">
               {job.companyName.charAt(0)}
             </span>
           </div>

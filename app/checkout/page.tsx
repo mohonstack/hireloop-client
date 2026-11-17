@@ -1,94 +1,122 @@
-// Checkout — the destination of the Apply Now premium gate
-// (`app/browse-jobs/[id]/_components/job-header-card.tsx` pushes here when a
-// free seeker has already used up their application limit).
+// Checkout / payment page — from the Figma "Public / Checkout — Stripe
+// Payment" (simplified: no card fields, since payment will be collected
+// on Stripe's hosted Checkout page — the Pay button hands off there).
 //
-// Payments are not wired up yet, so the primary action reports that instead
-// of pretending to charge a card. The gate's own condition lives in the
-// header card and is intentionally not duplicated here.
-
-"use client"
+// Layout: order summary (left) + payment method card with Pay button
+// (right), "Powered by Stripe" footer note.
+//
+// The order is a constant for now; make it dynamic (plan or application
+// fee, or a ?plan= search param) once the billing endpoint exists.
 
 import Link from "next/link"
-import { ArrowLeft, Check, Sparkles } from "lucide-react"
+import { ArrowLeft, CreditCard, Lock } from "lucide-react"
+import { PayButton } from "./_components/pay-button"
 
-import { toast } from "@/components/ui/toast"
+const ORDER = {
+    name: "Hireloop Pro Plan",
+    description: "Access to all features",
+    amount: "$20.00",
+}
 
-const includedPerks = [
-  "Unlimited job applications",
-  "Applications tracked in one place",
-  "Priority access to new listings",
-]
+// Figma checkout palette.
+const borderClass = "border-[#2e2e33]"
+const mutedClass = "text-[#a1a1aa]"
+const dimmedClass = "text-[#808089]"
 
-export default function CheckoutPage() {
-  const handleContinue = () => {
-    toast.add({
-      type: "warning",
-      title: "Payments not connected yet",
-      description:
-        "Stripe checkout has not been set up, so no charge was made.",
-    })
-  }
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ canceled?: string }> }) {
 
-  return (
-    <main className="mx-auto w-full max-w-[720px] px-4 py-12 sm:px-6">
-      <Link
-        href="/browse-jobs"
-        className="inline-flex items-center gap-2 text-sm text-[#A0A0AB] transition-colors hover:text-[#EDEDEF]"
-      >
-        <ArrowLeft aria-hidden className="size-4" />
-        Back to jobs
-      </Link>
+    const { canceled } = await searchParams
 
-      <section className="mt-6 border border-white/10 bg-[#141418] p-8 shadow-[0_1px_2px_rgba(0,0,0,0.35)] shadow-[inset_0_1px_rgba(255,255,255,0.035)]">
-        <span className="brand-chip inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#1A1A1F] px-3 py-1 text-xs font-medium text-[#A0A0AB]">
-          <Sparkles aria-hidden className="size-3.5" />
-          HireLoop Premium
-        </span>
+    if (canceled) {
+        console.log(
+            'Order canceled -- continue to shop around and check out when you\'re ready.'
+        )
+    }
 
-        <h1 className="mt-5 text-[32px] leading-10 font-semibold tracking-[-0.02em] text-[#EDEDEF]">
-          Keep applying without limits
-        </h1>
 
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-[#A0A0AB]">
-          You have reached the application limit on the free plan. Upgrade to
-          Premium to keep applying to as many jobs as you like.
-        </p>
+    return (
+        <div className="min-w-0">
+            {/* Minimal header like the Figma checkout top bar: brand only. */}
+            <header className="mx-auto flex h-24 w-full max-w-3xl items-center px-4">
+                <Link
+                    href="/"
+                    aria-label="Back"
+                    className="mr-6 text-[#a1a1aa] transition-colors hover:text-white"
+                >
+                    <ArrowLeft aria-hidden className="size-6" />
+                </Link>
+                <Link href="/" className="font-heading text-lg font-bold text-white">
+                    Hireloop
+                </Link>
+            </header>
 
-        <ul className="mt-6 flex list-none flex-col gap-3">
-          {includedPerks.map((perk) => (
-            <li
-              key={perk}
-              className="flex items-start gap-3 text-base text-[#EDEDEF]"
-            >
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#1A1A1F] text-[#A0A0AB]">
-                <Check aria-hidden className="size-3.5" />
-              </span>
-              {perk}
-            </li>
-          ))}
-        </ul>
+            <main className="mx-auto grid w-full max-w-3xl gap-16 px-4 pb-16 pt-4 lg:grid-cols-2">
+                {/* Order summary */}
+                <section>
+                    <p className={`text-xs font-bold uppercase tracking-[0.1em] ${dimmedClass}`}>
+                        Order summary
+                    </p>
 
-        <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center">
-          <button
-            type="button"
-            onClick={handleContinue}
-            className="h-12 rounded-lg bg-[#FAFAFA] px-6 text-base font-medium text-[#0B0B0C] shadow-[0_1px_2px_rgba(0,0,0,0.35)] transition-colors hover:bg-white"
-          >
-            Continue to payment
-          </button>
+                    <div className="mt-7 flex items-start justify-between gap-4 border-b pb-8 border-[#2e2e33]">
+                        <div>
+                            <h2 className="text-lg font-semibold leading-7 text-white">
+                                {ORDER.name}
+                            </h2>
+                            <p className={`mt-1.5 text-sm ${mutedClass}`}>
+                                {ORDER.description}
+                            </p>
+                        </div>
+                        <p className="whitespace-nowrap text-lg font-semibold leading-7 text-white">
+                            {ORDER.amount}
+                        </p>
+                    </div>
 
-          <Link
-            href="/browse-jobs"
-            className="flex h-12 items-center justify-center rounded-lg border border-white/10 bg-[#222228] px-6 text-base font-medium text-[#E5E2E3] transition-colors hover:border-white/25 hover:text-white"
-          >
-            Stay on the free plan
-          </Link>
+                    <div className="mt-4 flex items-center justify-between text-lg font-semibold text-white">
+                        <span>Total</span>
+                        <span className="whitespace-nowrap">{ORDER.amount}</span>
+                    </div>
+                </section>
+
+                {/* Payment */}
+                <section>
+                    <h2 className="text-sm font-semibold text-white">Payment method</h2>
+
+                    <div className={`mt-7 overflow-hidden rounded-lg border ${borderClass}`}>
+                        {/* Card method header — the real form fields come from
+                            Stripe, so the body is a redirect note for now. */}
+                        <div className="flex items-center gap-3 border-b border-[#2e2e33] bg-[#27272a] px-4 py-3.5">
+                            <CreditCard aria-hidden className="size-5 text-[#a1a1aa]" />
+                            <span className="text-sm font-medium text-white">Card</span>
+                        </div>
+
+                        <div className="flex flex-col gap-4 p-4">
+                            <p className="min-h-[90px] text-base text-[#888891]">
+                                You&apos;ll be redirected to Stripe&apos;s secure checkout to complete
+                                your payment. Card details are never stored on Hireloop.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-8">
+                        {/* TODO: wire the Stripe Checkout Session redirect (pay-button). */}
+
+                        <form action="/api/checkout_sessions" method="POST">
+                            <section>
+                                <button
+                                    type="submit" role="link"
+                                    className="h-[60px] w-full rounded-lg bg-[#0070E0] text-lg font-bold text-white shadow-[0_4px_6px_-4px_rgba(94,158,246,0.3),0_10px_15px_-3px_rgba(94,158,246,0.3)] transition-colors hover:bg-[#3F90E5]"
+                                >
+                                    Checkout {ORDER.amount}
+                                </button>
+                            </section>
+                        </form>
+                        <p className={`mt-4 flex items-center justify-center gap-1.5 text-xs ${dimmedClass}`}>
+                            <Lock aria-hidden className="size-3.5" />
+                            Powered by Stripe
+                        </p>
+                    </div>
+                </section>
+            </main>
         </div>
-
-        <p className="mt-4 text-sm text-[#6E6E78]">
-          No payment details are collected on this page yet.
-        </p>
-      </section>
-    </main>
-  )
+    )
 }

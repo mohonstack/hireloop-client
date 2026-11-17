@@ -26,7 +26,7 @@ export default async function JobDetailsPage({
 
     return (
         <>
-            <main className="mx-auto w-full max-w-[1240px] px-4 py-6 sm:px-6">
+            <main className="mx-auto w-full max-w-310 px-4 py-6 sm:px-6">
                 <JobHeaderCard job={job} />
 
                 <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_397px] lg:gap-6">
